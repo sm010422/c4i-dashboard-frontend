@@ -40,15 +40,25 @@ export default function Dashboard() {
   // 들어오므로, 선택된 탭의 지리적 경계 안에 있는 표적만 걸러서 지도/사이드바에 보여준다.
   // "군용기만" 토글이 켜져 있으면 status=MILITARY(AdsbFiPollingService가 adsb.fi의
   // /v2/mil 목록과 hex를 대조해서 붙인 값)인 것만 한 번 더 걸러낸다.
-  const regionTargets = useMemo(() => {
+  // 군용기 필터와 무관하게 "이 지역에 원래 표적이 잡히는가"부터 따로 셈한다 --
+  // 이걸 알아야 사이드바에서 "군용기 필터라서 0"과 "지역 자체에 데이터가 없어서 0"을
+  // 구분해서 보여줄 수 있다.
+  const rawRegionTargets = useMemo(() => {
     const filtered: Record<string, TargetEvent> = {};
     for (const [id, t] of Object.entries(targets)) {
-      if (!inBounds(t, region.bounds)) continue;
-      if (militaryOnly && t.status !== "MILITARY") continue;
-      filtered[id] = t;
+      if (inBounds(t, region.bounds)) filtered[id] = t;
     }
     return filtered;
-  }, [targets, region, militaryOnly]);
+  }, [targets, region]);
+
+  const regionTargets = useMemo(() => {
+    if (!militaryOnly) return rawRegionTargets;
+    const filtered: Record<string, TargetEvent> = {};
+    for (const [id, t] of Object.entries(rawRegionTargets)) {
+      if (t.status === "MILITARY") filtered[id] = t;
+    }
+    return filtered;
+  }, [rawRegionTargets, militaryOnly]);
 
   // 토글과 무관하게 "지금 이 지역에 군용기가 몇 대 잡혀있나"는 항상 계산해서 배지로 보여준다.
   const militaryCountInRegion = useMemo(
@@ -152,6 +162,9 @@ export default function Dashboard() {
         </div>
         <TargetSidebar
           targets={regionTargets}
+          rawCount={Object.keys(rawRegionTargets).length}
+          region={region}
+          militaryOnly={militaryOnly}
           threatLevels={threatLevels}
           onAnalyze={setSelectedTargetId}
           log={log}

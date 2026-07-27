@@ -1,20 +1,49 @@
 "use client";
 
-import type { TargetEvent } from "@/types/target";
+import type { Region, TargetEvent } from "@/types/target";
 
 interface TargetSidebarProps {
   targets: Record<string, TargetEvent>;
+  rawCount: number;
+  region: Region;
+  militaryOnly: boolean;
   threatLevels: Record<string, string>;
   onAnalyze: (targetId: string) => void;
   log: string[];
 }
 
-export default function TargetSidebar({ targets, threatLevels, onAnalyze, log }: TargetSidebarProps) {
+export default function TargetSidebar({
+  targets,
+  rawCount,
+  region,
+  militaryOnly,
+  threatLevels,
+  onAnalyze,
+  log,
+}: TargetSidebarProps) {
   const list = Object.values(targets).sort((a, b) => a.targetId.localeCompare(b.targetId));
+
+  // 목록이 비었을 때 "지역 자체에 원래 데이터가 없는 것"(ADS-B 구조적 한계)과
+  // "군용기 필터를 걸어서 0인 것"(정상적인 필터 결과)을 구분해서 안내한다 --
+  // 안 그러면 둘 다 그냥 빈 화면이라 버그처럼 보인다.
+  const showCoverageNote = list.length === 0 && rawCount === 0 && region.coverageNote;
+  const showMilitaryFilterNote = list.length === 0 && rawCount > 0 && militaryOnly;
 
   return (
     <div className="w-[300px] shrink-0 border-l border-term overflow-y-auto p-2.5 bg-term-panel">
       <h2 className="text-sm border-b border-term pb-1 mb-2.5">🎯 탐지 표적 현황 ({list.length})</h2>
+      {showCoverageNote && (
+        <div className="mb-2.5 border border-term-yellow p-2 text-[11px] leading-relaxed text-term-yellow">
+          ⚠️ 관측 공백 — 버그 아님
+          <br />
+          {region.coverageNote}
+        </div>
+      )}
+      {showMilitaryFilterNote && (
+        <div className="mb-2.5 border border-term-faint p-2 text-[11px] leading-relaxed text-term-dim">
+          이 지역에서 군용으로 식별된 표적이 없습니다. (민항기 {rawCount}대는 필터로 숨김)
+        </div>
+      )}
       <div className="flex flex-col gap-2">
         {list.map((t) => (
           <div key={t.targetId} className="border border-term p-2 text-xs leading-relaxed">
