@@ -3,9 +3,11 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useTargetSocket } from "@/hooks/useTargetSocket";
+import { useApprovalSocket } from "@/hooks/useApprovalSocket";
 import TargetSidebar from "@/components/TargetSidebar";
 import AnalysisModal from "@/components/AnalysisModal";
 import ChatPanel from "@/components/ChatPanel";
+import ApprovalPanel from "@/components/ApprovalPanel";
 import { BACKEND_URL } from "@/lib/config";
 import { REGIONS, type TargetEvent } from "@/types/target";
 
@@ -25,11 +27,13 @@ function inBounds(t: TargetEvent, bounds: [number, number, number, number]) {
 
 export default function Dashboard() {
   const { status, targets, history } = useTargetSocket();
+  const { pending: pendingApprovals } = useApprovalSocket();
   const [regionCode, setRegionCode] = useState<(typeof REGIONS)[number]["code"]>("KOREA");
   const [militaryOnly, setMilitaryOnly] = useState(false);
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
   const [threatLevels, setThreatLevels] = useState<Record<string, string>>({});
   const [chatOpen, setChatOpen] = useState(false);
+  const [approvalOpen, setApprovalOpen] = useState(false);
   const [rounds, setRounds] = useState(1);
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<string[]>([]);
@@ -147,6 +151,16 @@ export default function Dashboard() {
           >
             🤖 AI 챗봇
           </button>
+          <button
+            onClick={() => setApprovalOpen((v) => !v)}
+            className={`border px-2.5 py-1 ${
+              pendingApprovals.length > 0
+                ? "border-[#ff9900] text-[#ff9900] hover:bg-[#ff9900] hover:text-black"
+                : "border-term hover:bg-term-fg hover:text-black"
+            }`}
+          >
+            🛡️ 승인 대기{pendingApprovals.length > 0 && ` (${pendingApprovals.length})`}
+          </button>
         </div>
       </div>
 
@@ -179,6 +193,7 @@ export default function Dashboard() {
         }
       />
       <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
+      <ApprovalPanel open={approvalOpen} onClose={() => setApprovalOpen(false)} />
     </div>
   );
 }

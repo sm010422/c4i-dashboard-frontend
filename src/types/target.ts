@@ -79,3 +79,20 @@ export interface ChatMessage {
   sources?: SourceChunk[];
   error?: string;
 }
+
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+// target-tracking-service의 ThreatApprovalDto.Response와 대응한다.
+// AI가 HIGH/CRITICAL로 판정한 표적에 대한 human-in-the-loop 승인/반려 기록.
+export interface ThreatApproval {
+  id: number;
+  targetId: string;
+  targetType: string;
+  threatLevel: "HIGH" | "CRITICAL" | string;
+  sitrep: string;
+  status: ApprovalStatus;
+  requestedAt: string;
+  decidedAt: string | null;
+  decidedBy: string | null;
+  decisionReason: string | null;
+}
