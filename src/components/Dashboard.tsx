@@ -1,13 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTargetSocket } from "@/hooks/useTargetSocket";
 import { useApprovalSocket } from "@/hooks/useApprovalSocket";
 import TargetSidebar from "@/components/TargetSidebar";
 import AnalysisModal from "@/components/AnalysisModal";
 import ChatPanel from "@/components/ChatPanel";
 import ApprovalPanel from "@/components/ApprovalPanel";
+import ArchitecturePanel from "@/components/ArchitecturePanel";
 import { BACKEND_URL } from "@/lib/config";
 import { REGIONS, type TargetEvent } from "@/types/target";
 
@@ -34,9 +35,25 @@ export default function Dashboard() {
   const [threatLevels, setThreatLevels] = useState<Record<string, string>>({});
   const [chatOpen, setChatOpen] = useState(false);
   const [approvalOpen, setApprovalOpen] = useState(false);
+  const [archOpen, setArchOpen] = useState(false);
   const [rounds, setRounds] = useState(1);
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<string[]>([]);
+
+  // 처음 보는 사람은 버튼을 눌러봐야만 시스템 구성을 알 수 있으므로,
+  // 이 세션에서 아직 안 봤으면 최초 1회 자동으로 띄운다. 서버 렌더 시점엔
+  // sessionStorage가 없어 항상 false이므로, 마운트 후 클라이언트에서만 판단해
+  // hydration mismatch를 피한다.
+  useEffect(() => {
+    /* eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage(외부 시스템)를
+       읽어 마운트 시점에 한 번만 동기화하는 표준 패턴. */
+    if (!window.sessionStorage.getItem("c4i-arch-seen")) setArchOpen(true);
+  }, []);
+
+  function closeArch() {
+    setArchOpen(false);
+    window.sessionStorage.setItem("c4i-arch-seen", "1");
+  }
 
   const region = REGIONS.find((r) => r.code === regionCode)!;
 
@@ -127,6 +144,12 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2.5 text-[13px]">
           <span>{STATUS_LABEL[status]}</span>
+          <button
+            onClick={() => setArchOpen(true)}
+            className="border border-term-faint px-2.5 py-1 text-term-dim hover:border-term hover:text-term-fg"
+          >
+            🏗️ 시스템 구성
+          </button>
           <label className="flex items-center gap-1">
             회수
             <input
@@ -194,6 +217,7 @@ export default function Dashboard() {
       />
       <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
       <ApprovalPanel open={approvalOpen} onClose={() => setApprovalOpen(false)} />
+      <ArchitecturePanel open={archOpen} onClose={closeArch} />
     </div>
   );
 }
