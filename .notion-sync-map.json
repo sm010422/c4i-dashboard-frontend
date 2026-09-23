@@ -1,4 +1,5 @@
 {
   "docs/concepts/01-frontend-visibility-gap-diagnosis.md": "3e350b17-ecd1-815c-b9e0-f7bfb9808cde",
-  "docs/concepts/02-architecture-panel-for-visibility-gap.md": "3e350b17-ecd1-812b-98a0-c76ef6904a20"
+  "docs/concepts/02-architecture-panel-for-visibility-gap.md": "3e350b17-ecd1-812b-98a0-c76ef6904a20",
+  "docs/concepts/03-polling-interval-and-coordinate-interpolation.md": "3e450b17-ecd1-819b-af62-c95bc821198f"
 }
