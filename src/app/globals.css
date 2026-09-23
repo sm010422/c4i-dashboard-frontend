@@ -19,8 +19,12 @@ body {
   background: #0a0a0a;
 }
 
-/* 원래 static/index.html의 지도 색감(하늘색 타일을 어둡게)을 그대로 재현 */
-.map-tint {
+/* 원래 static/index.html의 지도 색감(하늘색 타일을 어둡게)을 그대로 재현.
+   .leaflet-tile-pane에만 걸어야 한다 -- .map-tint를 MapContainer 루트에 걸면
+   filter가 자식 전체(마커/툴팁 pane 포함)에 상속돼서, 원래 초록색이어야 할
+   표적 마커까지 색이 뒤틀려(hue-rotate로 핑크색이 됨) 핑크색으로 물든 지형과
+   구분이 안 가는 문제가 있었다. */
+.map-tint .leaflet-tile-pane {
   filter: hue-rotate(200deg) saturate(0.5) brightness(0.7);
 }
 

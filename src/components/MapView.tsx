@@ -71,7 +71,7 @@ export default function MapView({ targets, history, threatLevels, onSelectTarget
           icon={targetIcon(threatLevels[t.targetId], t.heading)}
           eventHandlers={{ click: () => onSelectTarget(t.targetId) }}
         >
-          <Tooltip permanent direction="top" offset={[0, -12]}>
+          <Tooltip direction="top" offset={[0, -12]}>
             {t.targetId}
             <br />
             고도: {t.altitude.toFixed(0)}m / 속도: {t.speed.toFixed(0)}km/h
