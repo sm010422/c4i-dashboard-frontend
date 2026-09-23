@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { useTargetSocket } from "@/hooks/useTargetSocket";
 import { useApprovalSocket } from "@/hooks/useApprovalSocket";
+import { useInterpolatedTargets } from "@/hooks/useInterpolatedTargets";
 import TargetSidebar from "@/components/TargetSidebar";
 import AnalysisModal from "@/components/AnalysisModal";
 import ChatPanel from "@/components/ChatPanel";
@@ -86,6 +87,10 @@ export default function Dashboard() {
     () => Object.values(targets).filter((t) => inBounds(t, region.bounds) && t.status === "MILITARY").length,
     [targets, region]
   );
+
+  // 지도 마커 위치만 보간해서 부드럽게 움직이게 한다 -- 사이드바 텍스트(고도/속도 등)와
+  // AI 분석 요청은 여전히 실제 수신값(regionTargets)을 그대로 쓴다.
+  const interpolatedTargets = useInterpolatedTargets(regionTargets);
 
   const regionHistory = useMemo(() => {
     const filtered: Record<string, [number, number][]> = {};
@@ -190,7 +195,7 @@ export default function Dashboard() {
       <div className="flex-1 flex overflow-hidden">
         <div className="flex-1">
           <MapView
-            targets={regionTargets}
+            targets={interpolatedTargets}
             history={regionHistory}
             threatLevels={threatLevels}
             onSelectTarget={setSelectedTargetId}
