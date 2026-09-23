@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { derivePendingApprovals } from "@/lib/approvals";
 import { BACKEND_URL, WS_URL } from "@/lib/config";
 import type { ThreatApproval } from "@/types/target";
 
@@ -56,9 +57,7 @@ export function useApprovalSocket() {
     // 여기서 낙관적 갱신은 하지 않는다 -- 응답 지연이 있어도 최종 상태는 소켓이 맞춰준다.
   }
 
-  const pending = Object.values(approvals)
-    .filter((a) => a.status === "PENDING")
-    .sort((a, b) => b.requestedAt.localeCompare(a.requestedAt));
+  const pending = derivePendingApprovals(approvals);
 
   return { pending, decide };
 }

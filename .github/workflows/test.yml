@@ -1,0 +1,35 @@
+name: Test c4i-dashboard-frontend
+
+# 이 레포는 Vercel Git 연동으로 배포되고(GitHub Actions 배포 파이프라인 없음),
+# 그 배포 자체를 이 워크플로가 막지는 못한다. 그래도 push/PR마다 타입체크·린트·
+# 유닛테스트 결과를 눈에 보이게 남겨두는 용도.
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  test:
+    name: ✅ Typecheck / Lint / Unit tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: ✅ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint src/
+
+      - name: Run unit tests
+        run: npm test

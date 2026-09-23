@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { WS_URL } from "@/lib/config";
+import { appendHistory } from "@/lib/targetHistory";
 import type { TargetEvent } from "@/types/target";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
@@ -28,12 +29,7 @@ export function useTargetSocket() {
         client.subscribe("/topic/targets", (message) => {
           const event: TargetEvent = JSON.parse(message.body);
           setTargets((prev) => ({ ...prev, [event.targetId]: event }));
-          setHistory((prev) => {
-            const coords = prev[event.targetId] ?? [];
-            const next = [...coords, [event.latitude, event.longitude] as [number, number]];
-            if (next.length > 20) next.shift(); // 최근 20개만 유지
-            return { ...prev, [event.targetId]: next };
-          });
+          setHistory((prev) => appendHistory(prev, event));
         });
       },
       onDisconnect: () => setStatus("disconnected"),

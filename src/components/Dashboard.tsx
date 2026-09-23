@@ -11,6 +11,7 @@ import ChatPanel from "@/components/ChatPanel";
 import ApprovalPanel from "@/components/ApprovalPanel";
 import ArchitecturePanel from "@/components/ArchitecturePanel";
 import { BACKEND_URL } from "@/lib/config";
+import { inBounds } from "@/lib/geo";
 import { REGIONS, type TargetEvent } from "@/types/target";
 
 // Leaflet은 window에 의존해서 SSR 불가 -- 클라이언트에서만 동적 로드.
@@ -21,11 +22,6 @@ const STATUS_LABEL: Record<string, string> = {
   connected: "🟢 연결됨 | SYSTEM ONLINE",
   disconnected: "🔴 연결 끊김",
 };
-
-function inBounds(t: TargetEvent, bounds: [number, number, number, number]) {
-  const [south, west, north, east] = bounds;
-  return t.latitude >= south && t.latitude <= north && t.longitude >= west && t.longitude <= east;
-}
 
 export default function Dashboard() {
   const { status, targets, history } = useTargetSocket();
