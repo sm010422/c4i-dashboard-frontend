@@ -75,7 +75,9 @@ export interface ChatMessage {
   role: "user" | "assistant";
   text: string;
   route?: ChatRoute;
-  toolCall?: ToolCallResult;
+  // 멀티스텝 플래닝 에이전트라 도구 호출이 0~3개 순서대로 올 수 있다 (threat-intel-ai-service의
+  // MAX_TOOL_STEPS). 매번 event: tool_call이 올 때마다 뒤에 누적한다.
+  toolCalls?: ToolCallResult[];
   sources?: SourceChunk[];
   error?: string;
 }

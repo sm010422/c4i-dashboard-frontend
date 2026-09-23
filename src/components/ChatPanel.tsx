@@ -57,7 +57,7 @@ export default function ChatPanel({ open, onClose }: ChatPanelProps) {
             if (event === "route" && typeof obj.route === "string") {
               msg.route = obj.route as ChatRoute;
             } else if (event === "tool_call") {
-              msg.toolCall = obj as unknown as ToolCallResult;
+              msg.toolCalls = [...(msg.toolCalls ?? []), obj as unknown as ToolCallResult];
             } else if (event === "error" && typeof obj.message === "string") {
               msg.error = obj.message;
             } else if (typeof obj.token === "string") {
@@ -101,9 +101,13 @@ export default function ChatPanel({ open, onClose }: ChatPanelProps) {
               </div>
             )}
             <div className="whitespace-pre-wrap leading-relaxed">{m.text}</div>
-            {m.toolCall && (
-              <div className="text-[10px] text-[#ff9900] mt-1">
-                🔧 도구 호출: {m.toolCall.tool_name} → {m.toolCall.tool_result}
+            {m.toolCalls && m.toolCalls.length > 0 && (
+              <div className="text-[10px] text-[#ff9900] mt-1 flex flex-col gap-0.5">
+                {m.toolCalls.map((tc, k) => (
+                  <div key={k}>
+                    🔧 {k + 1}단계: {tc.tool_name} → {tc.tool_result}
+                  </div>
+                ))}
               </div>
             )}
             {m.error && <div className="mt-1">[오류: {m.error}]</div>}
