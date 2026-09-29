@@ -13,9 +13,16 @@ const THREAT_COLORS: Record<string, string> = {
   LOW: "#00ff41",
 };
 
-function dotIcon(color: string) {
+// SHIP 전용 고정 테두리색. 등급별 fill(THREAT_COLORS)은 항공기와 동일하게 유지해서
+// 위협도 의미는 그대로 두고, 이 테두리 하나로 "항공기냐 선박이냐"를 등급과 무관하게
+// 항상 구분되게 한다 -- 같은 LOW/CRITICAL이면 모양(삼각형 vs 선체) 말고는 색이 완전히
+// 겹쳐서 구분이 안 된다는 피드백을 받고 추가했다.
+const SHIP_STROKE = "#00d9ff";
+
+function dotIcon(color: string, stroke?: string) {
+  const border = stroke ? `border:1.5px solid ${stroke};` : "";
   return L.divIcon({
-    html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};filter:drop-shadow(0 0 3px ${color});"></div>`,
+    html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};${border}filter:drop-shadow(0 0 3px ${color});box-sizing:border-box;"></div>`,
     className: "",
     iconSize: [10, 10],
     iconAnchor: [5, 5],
@@ -35,7 +42,7 @@ function targetIcon(threatLevel: string | undefined, heading: number | null, tar
   const color = threatLevel ? THREAT_COLORS[threatLevel] ?? "#00ff41" : "#00ff41";
 
   if (targetType === "SHIP") {
-    if (heading === null) return dotIcon(color);
+    if (heading === null) return dotIcon(color, SHIP_STROKE);
 
     // 뱃머리(뾰족)-> 선체(가늘고 긴 평행)-> 선미(평평)로 이어지는 top-down 선박 실루엣.
     // 처음엔 8x16 비율로 그렸는데 너무 뭉툭해서(정사각형에 가까움) "배처럼" 안 보였다 --
@@ -43,7 +50,7 @@ function targetIcon(threatLevel: string | undefined, heading: number | null, tar
     // 삼각형(항공기)의 rotate() 규칙과 동일: 0도=북을 향한 기본 방향, 시계방향 회전.
     return L.divIcon({
       html: `<svg width="13" height="24" viewBox="0 0 12 22" style="transform:rotate(${heading}deg);transform-origin:6px 11px;filter:drop-shadow(0 0 3px ${color});">
-        <polygon points="6,0 9,6 9,20 3,20 3,6" fill="${color}" />
+        <polygon points="6,0 9,6 9,20 3,20 3,6" fill="${color}" stroke="${SHIP_STROKE}" stroke-width="1.2" />
       </svg>`,
       className: "",
       iconSize: [13, 24],
