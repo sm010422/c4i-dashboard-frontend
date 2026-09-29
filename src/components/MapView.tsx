@@ -37,15 +37,17 @@ function targetIcon(threatLevel: string | undefined, heading: number | null, tar
   if (targetType === "SHIP") {
     if (heading === null) return dotIcon(color);
 
-    // 뱃머리(뾰족)-> 선체(평행)-> 선미(평평)로 이어지는 top-down 선박 실루엣.
+    // 뱃머리(뾰족)-> 선체(가늘고 긴 평행)-> 선미(평평)로 이어지는 top-down 선박 실루엣.
+    // 처음엔 8x16 비율로 그렸는데 너무 뭉툭해서(정사각형에 가까움) "배처럼" 안 보였다 --
+    // 6x20으로 더 가늘고 길게 조정해서 실제 선박 실루엣에 가깝게 만들었다.
     // 삼각형(항공기)의 rotate() 규칙과 동일: 0도=북을 향한 기본 방향, 시계방향 회전.
     return L.divIcon({
-      html: `<svg width="14" height="20" viewBox="0 0 12 18" style="transform:rotate(${heading}deg);transform-origin:6px 9px;filter:drop-shadow(0 0 3px ${color});">
-        <polygon points="6,0 10,6 10,16 2,16 2,6" fill="${color}" />
+      html: `<svg width="13" height="24" viewBox="0 0 12 22" style="transform:rotate(${heading}deg);transform-origin:6px 11px;filter:drop-shadow(0 0 3px ${color});">
+        <polygon points="6,0 9,6 9,20 3,20 3,6" fill="${color}" />
       </svg>`,
       className: "",
-      iconSize: [14, 20],
-      iconAnchor: [7, 9],
+      iconSize: [13, 24],
+      iconAnchor: [6, 11],
     });
   }
 
