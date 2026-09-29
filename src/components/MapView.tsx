@@ -20,9 +20,10 @@ const THREAT_COLORS: Record<string, string> = {
 const SHIP_STROKE = "#00d9ff";
 
 function dotIcon(color: string, stroke?: string) {
-  const border = stroke ? `border:1.5px solid ${stroke};` : "";
+  const border = stroke ? `border:2px solid ${stroke};` : "";
+  const glowColor = stroke ?? color;
   return L.divIcon({
-    html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};${border}filter:drop-shadow(0 0 3px ${color});box-sizing:border-box;"></div>`,
+    html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};${border}filter:drop-shadow(0 0 5px ${glowColor});box-sizing:border-box;"></div>`,
     className: "",
     iconSize: [10, 10],
     iconAnchor: [5, 5],
@@ -48,9 +49,13 @@ function targetIcon(threatLevel: string | undefined, heading: number | null, tar
     // 처음엔 8x16 비율로 그렸는데 너무 뭉툭해서(정사각형에 가까움) "배처럼" 안 보였다 --
     // 6x20으로 더 가늘고 길게 조정해서 실제 선박 실루엣에 가깝게 만들었다.
     // 삼각형(항공기)의 rotate() 규칙과 동일: 0도=북을 향한 기본 방향, 시계방향 회전.
+    // 처음엔 얇은 테두리(1.2px)만 둘렀는데 항공기랑 색 차이가 잘 안 느껴진다는
+    // 피드백을 받았다 -- 글로우 자체를 위협색이 아니라 테두리색(파란)으로 바꾸고
+    // 테두리도 굵게(2.5px) 키워서, 가까이서 봐야 보이는 얇은 선이 아니라 한눈에
+    // 들어오는 파란 후광으로 만들었다. fill은 여전히 등급색이라 위협도 의미는 유지.
     return L.divIcon({
-      html: `<svg width="13" height="24" viewBox="0 0 12 22" style="transform:rotate(${heading}deg);transform-origin:6px 11px;filter:drop-shadow(0 0 3px ${color});">
-        <polygon points="6,0 9,6 9,20 3,20 3,6" fill="${color}" stroke="${SHIP_STROKE}" stroke-width="1.2" />
+      html: `<svg width="13" height="24" viewBox="0 0 12 22" style="transform:rotate(${heading}deg);transform-origin:6px 11px;filter:drop-shadow(0 0 5px ${SHIP_STROKE});">
+        <polygon points="6,0 9,6 9,20 3,20 3,6" fill="${color}" stroke="${SHIP_STROKE}" stroke-width="2.5" />
       </svg>`,
       className: "",
       iconSize: [13, 24],
