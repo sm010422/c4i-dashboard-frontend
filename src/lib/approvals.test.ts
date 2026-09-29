@@ -9,6 +9,8 @@ function approval(overrides: Partial<ThreatApproval>): ThreatApproval {
     targetType: "DRONE",
     threatLevel: "HIGH",
     sitrep: "sitrep",
+    recommendedOptions: [],
+    selectedOption: null,
     status: "PENDING",
     requestedAt: "2026-09-23T00:00:00",
     decidedAt: null,

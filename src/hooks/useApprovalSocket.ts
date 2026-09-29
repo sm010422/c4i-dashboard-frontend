@@ -47,11 +47,17 @@ export function useApprovalSocket() {
     };
   }, []);
 
-  async function decide(id: number, decision: "APPROVED" | "REJECTED", decidedBy: string, reason: string) {
+  async function decide(
+    id: number,
+    decision: "APPROVED" | "REJECTED",
+    decidedBy: string,
+    reason: string,
+    selectedOption?: string | null
+  ) {
     await fetch(`${BACKEND_URL}/api/v1/threat-approvals/${id}/decide`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ decision, decidedBy, reason }),
+      body: JSON.stringify({ decision, decidedBy, reason, selectedOption: selectedOption ?? null }),
     });
     // 서버가 결정 직후 /topic/approvals로 갱신된 상태를 다시 브로드캐스트하므로
     // 여기서 낙관적 갱신은 하지 않는다 -- 응답 지연이 있어도 최종 상태는 소켓이 맞춰준다.

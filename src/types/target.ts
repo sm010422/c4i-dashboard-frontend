@@ -84,6 +84,18 @@ export interface ChatMessage {
 
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
 
+// target-tracking-service의 AssetRecommendation record와 대응한다. 예전엔
+// "(시뮬레이션 데이터) READY/COOLDOWN 랜덤"이었던 걸 하버사인 거리 기반 실제
+// ETA 계산으로 교체하면서 생긴 타입 -- MSS(Maven Smart System)의 "AI가 연료/
+// 도달시간 계산해 top-3 추천"을 참고했다.
+export interface AssetRecommendation {
+  assetName: string;
+  distanceKm: number;
+  etaMinutes: number;
+  ammoCount: number;
+  feasible: boolean;
+}
+
 // target-tracking-service의 ThreatApprovalDto.Response와 대응한다.
 // AI가 HIGH/CRITICAL로 판정한 표적에 대한 human-in-the-loop 승인/반려 기록.
 export interface ThreatApproval {
@@ -92,6 +104,8 @@ export interface ThreatApproval {
   targetType: string;
   threatLevel: "HIGH" | "CRITICAL" | string;
   sitrep: string;
+  recommendedOptions: AssetRecommendation[];
+  selectedOption: string | null;
   status: ApprovalStatus;
   requestedAt: string;
   decidedAt: string | null;
