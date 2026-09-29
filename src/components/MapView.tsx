@@ -14,12 +14,25 @@ const THREAT_COLORS: Record<string, string> = {
 };
 
 /**
- * heading이 있으면(ADS-B의 track) 실제 진행방향으로 회전한 삼각형 마커,
- * 없으면(가짜 시뮬레이터, 또는 지상 정지 중이라 방향 데이터가 없는 경우)
+ * heading이 있으면(ADS-B의 track, AIS의 TrueHeading/Cog) 실제 진행방향으로 회전한
+ * 삼각형 마커, 없으면(가짜 시뮬레이터, 또는 정지 중이라 방향 데이터가 없는 경우)
  * 방향을 안다고 거짓으로 암시하지 않도록 그냥 점으로 표시한다.
+ *
+ * SHIP(AIS)은 항공기와 같은 삼각형/점 로직을 쓰되, 지도에서 항공기와 한눈에 구분되게
+ * 사각형으로 그린다 -- 새 데이터 소스(2번째 실시간 피드)가 섞여 있다는 걸 시각적으로도
+ * 드러내는 편이 다중 소스 융합이라는 이 프로젝트의 의도에 맞다고 판단.
  */
-function targetIcon(threatLevel: string | undefined, heading: number | null) {
+function targetIcon(threatLevel: string | undefined, heading: number | null, targetType?: string) {
   const color = threatLevel ? THREAT_COLORS[threatLevel] ?? "#00ff41" : "#00ff41";
+
+  if (targetType === "SHIP") {
+    return L.divIcon({
+      html: `<div style="width:9px;height:9px;background:${color};filter:drop-shadow(0 0 3px ${color});${heading !== null ? `transform:rotate(${heading}deg);` : ""}"></div>`,
+      className: "",
+      iconSize: [9, 9],
+      iconAnchor: [4, 4],
+    });
+  }
 
   if (heading === null) {
     return L.divIcon({
@@ -68,13 +81,15 @@ export default function MapView({ targets, history, threatLevels, onSelectTarget
         <Marker
           key={t.targetId}
           position={[t.latitude, t.longitude]}
-          icon={targetIcon(threatLevels[t.targetId], t.heading)}
+          icon={targetIcon(threatLevels[t.targetId], t.heading, t.targetType)}
           eventHandlers={{ click: () => onSelectTarget(t.targetId) }}
         >
           <Tooltip direction="top" offset={[0, -12]}>
             {t.targetId}
             <br />
-            고도: {t.altitude.toFixed(0)}m / 속도: {t.speed.toFixed(0)}km/h
+            {t.targetType === "SHIP"
+              ? `속도: ${t.speed.toFixed(0)}km/h`
+              : `고도: ${t.altitude.toFixed(0)}m / 속도: ${t.speed.toFixed(0)}km/h`}
             {t.heading !== null && ` / 방위 ${t.heading.toFixed(0)}°`}
           </Tooltip>
         </Marker>
