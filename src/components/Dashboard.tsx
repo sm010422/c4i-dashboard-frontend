@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [archOpen, setArchOpen] = useState(false);
   const [rounds, setRounds] = useState(1);
   const [running, setRunning] = useState(false);
+  const [swarmRunning, setSwarmRunning] = useState(false);
   const [log, setLog] = useState<string[]>([]);
 
   // 처음 보는 사람은 버튼을 눌러봐야만 시스템 구성을 알 수 있으므로,
@@ -112,6 +113,25 @@ export default function Dashboard() {
     }
   }
 
+  // DroneSimulator(위 runSimulation)는 매 라운드 좌표를 완전 랜덤으로 다시 뽑아서
+  // 순간이동하는 구조라, DMZ에서 남하하는 스웜처럼 "이동"을 보여주기엔 안 맞았다.
+  // /api/simulator/swarm은 서버 쪽에서 표적별 상태(위치/방위각/속도)를 유지하며
+  // 2초 틱마다 실제로 전진시키는 별도 시나리오 -- 90초 동안만 돌고 자동으로 멈춘다.
+  // 버튼은 시나리오가 도는 동안만 비활성화해서 중복 실행(서버가 409로 거부)을 막는다.
+  async function runSwarmScenario() {
+    setSwarmRunning(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/simulator/swarm?count=20&durationSec=90`, {
+        method: "POST",
+      });
+      addLog(await res.text());
+    } catch (e) {
+      addLog(`스웜 시나리오 실행 실패: ${e}`);
+    } finally {
+      setTimeout(() => setSwarmRunning(false), 90_000);
+    }
+  }
+
   const selectedTarget = selectedTargetId ? targets[selectedTargetId] ?? null : null;
 
   return (
@@ -168,6 +188,13 @@ export default function Dashboard() {
             className="border border-term px-2.5 py-1 disabled:opacity-50 hover:bg-term-fg hover:text-black"
           >
             ▶ 시뮬레이션 실행
+          </button>
+          <button
+            onClick={runSwarmScenario}
+            disabled={swarmRunning}
+            className="border border-[#ff3333] text-[#ff3333] px-2.5 py-1 disabled:opacity-50 hover:bg-[#ff3333] hover:text-black"
+          >
+            🚁 DMZ 스웜{swarmRunning && " (진행 중...)"}
           </button>
           <button
             onClick={() => setChatOpen((v) => !v)}
